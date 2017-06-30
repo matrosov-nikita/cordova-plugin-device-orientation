@@ -189,7 +189,7 @@ A `CompassHeading` object is returned to the `compassSuccess` callback function.
 
 ### Android Quirks
 
-- The `trueHeading` property is not supported, but reports the same value as `magneticHeading`.
+- The `trueHeading` property is not supported, but reports the same value as `magneticHeading`. For some Samsung devices this property can take only a few values: 0  - down (or horizontal), 90 - left, 180 - up, 270 - right.
 
 - The `headingAccuracy` property is always 0 because there is no difference between the `magneticHeading` and `trueHeading`.
 

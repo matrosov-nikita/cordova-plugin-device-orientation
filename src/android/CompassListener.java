@@ -18,6 +18,7 @@
 */
 package org.apache.cordova.deviceorientation;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.cordova.CordovaWebView;
@@ -48,6 +49,7 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
     public static int RUNNING = 2;
     public static int ERROR_FAILED_TO_START = 3;
     private static int SAMSUNG_SENSOR_TYPE_ORIENTATION = 65558;
+    private static  HashMap<Float, Float> samsungHeadings = new HashMap<Float, Float>();
 
     public long TIMEOUT = 30000;        // Timeout in msec to shut off listener
 
@@ -56,6 +58,7 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
     long timeStamp;                     // time of most recent value
     long lastAccessTime;                // time the value was last retrieved
     int accuracy;                       // accuracy of the sensor
+    boolean isSpecificSamsungSensor;     // orientation sensor type = 65558
 
     private SensorManager sensorManager;// Sensor manager
     Sensor mSensor;                     // Compass sensor returned by sensor manager
@@ -68,6 +71,12 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
     public CompassListener() {
         this.heading = 0;
         this.timeStamp = 0;
+        this.isSpecificSamsungSensor = false;
+        CompassListener.samsungHeadings.put(0f, 180f);
+        CompassListener.samsungHeadings.put(1f, 90f);
+        CompassListener.samsungHeadings.put(2f, 0f);
+        CompassListener.samsungHeadings.put(3f, 270f);
+        CompassListener.samsungHeadings.put(255f, 0f);
         this.setStatus(CompassListener.STOPPED);
     }
 
@@ -170,6 +179,7 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
 
         // Sensors from 'Samsung Electronic' vendor have another orientation type (65558)
         if (list != null && list.size() == 0) {
+            this.isSpecificSamsungSensor = true;
             list = this.sensorManager.getSensorList(CompassListener.SAMSUNG_SENSOR_TYPE_ORIENTATION);
         }
 
@@ -223,7 +233,7 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
     public void onSensorChanged(SensorEvent event) {
 
         // We only care about the orientation as far as it refers to Magnetic North
-        float heading = event.values[0];
+        float heading = this.isSpecificSamsungSensor? samsungHeadings.get(event.values[0]): event.values[0];
 
         // Save heading
         this.timeStamp = System.currentTimeMillis();
